@@ -22,6 +22,36 @@ class _LoginScreenState extends State<LoginScreen> {
   late final TextEditingController passwordController;
   late final ApiClient apiClient;
   late final LoginService loginService;
+  bool isLoading = false;
+  Future<void> _login() async {
+    if (_formKey.currentState?.validate() ?? false) {
+      setState(() {
+        isLoading = true;
+      });
+      try {
+        final response = await loginService.login(
+          email: emailController.text.trim(),
+          password: passwordController.text.trim(),
+        );
+
+        debugPrint("Access Token: ${response.accessToken}");
+        debugPrint("Refresh Token: ${response.refreshToken}");
+        setState(() {
+          isLoading = false;
+        });
+        if (!mounted) return;
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => MainNavigationScreen()),
+        );
+      } on DioException catch (e) {
+        setState(() {
+          isLoading = false;
+        });
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+    }
+  }
 
   @override
   void initState() {
@@ -57,17 +87,15 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 32),
                 Text(
                   'Welcome Back!',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.displayLarge?.copyWith(fontSize: 32),
+                  style: Theme.of(context).textTheme.displayLarge
+                      ?.copyWith(fontSize: 32),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Login to continue your shopping',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(fontSize: 16),
+                  style: Theme.of(context).textTheme.bodyMedium
+                      ?.copyWith(fontSize: 16),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 64),
@@ -116,27 +144,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 32),
                 PrimaryButton(
                   text: 'Login',
-                  onPressed: ()async {
-                    if (_formKey.currentState?.validate() ?? false) {
-                      try {
-                        final response=await loginService.login(
-                          email: emailController.text.trim(),
-                          password: passwordController.text.trim());
-
-                          print("Access Token: ${response.accessToken}");
-                          print("Refresh Token: ${response.refreshToken}");
-                          Navigator.of(context).pushReplacement(
-                            MaterialPageRoute(
-                              builder: (context)=>MainNavigationScreen())
-                          );
-
-                      }on DioException catch (e) {
-                        ScaffoldMessenger.of(
-                          context,
-                        ).showSnackBar(SnackBar(content:Text(e.toString())));
-                      }
-                    }
-                  },
+                  isLoading: isLoading,
+                  onPressed: _login,
                 ),
                 const SizedBox(height: 24),
                 Row(
@@ -148,9 +157,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         Navigator.pushReplacement(
                           context,
                           PageRouteBuilder(
-                            pageBuilder:
-                                (context, animation, secondaryAnimation) =>
-                                    const SignUpScreen(),
+                            pageBuilder: (
+                              context,
+                              animation,
+                              secondaryAnimation,
+                            ) => const SignUpScreen(),
                             transitionsBuilder:
                                 (
                                   context,

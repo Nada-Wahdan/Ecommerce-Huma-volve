@@ -23,6 +23,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   late final TextEditingController passwordController;
   late final ApiClient apiClient;
   late final SignupService signupService;
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -118,8 +119,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 const SizedBox(height: 40),
                 PrimaryButton(
                   text: 'Sign Up',
+                  isLoading: isLoading, 
                   onPressed: () async {
                     if (_formKey.currentState?.validate() ?? false) {
+                      setState(() {
+                        isLoading = true; 
+                      });
                       try {
                         final requestModel = SignupReqModel(
                           name: nameController.text.trim(),
@@ -127,29 +132,37 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           password: passwordController.text.trim(),
                         );
 
-                        final response = await signupService.signUp(requestModel);
+                        final response = await signupService.signUp(
+                          requestModel,
+                        );
 
-                        print("User Registered ID: ${response.id}");
-                        print("User Registered Email: ${response.email}");
+                        debugPrint("User Registered ID: ${response.id}");
+                        debugPrint("User Registered Email: ${response.email}");
+                        
+                        setState(() {
+                          isLoading = false; 
+                        });
 
-                        if (context.mounted) {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const LoginScreen(),
-                            ),
-                          );
-                        }
+                        if (!context.mounted) return;
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const LoginScreen(),
+                          ),
+                        );
                       } on DioException catch (e) {
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                e.response?.data['message'] ?? e.toString(),
-                              ),
+                        setState(() {
+                          isLoading = false; 
+                        });
+
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              e.response?.data['message'] ?? e.toString(),
                             ),
-                          );
-                        }
+                          ),
+                        );
                       }
                     }
                   },
