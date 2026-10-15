@@ -1,6 +1,8 @@
 import 'package:ecommerce_app_huma_volve/core/network/api_client.dart';
 import 'package:ecommerce_app_huma_volve/features/auth/data/data_source/auth_remote_data_source_impl.dart';
 import 'package:ecommerce_app_huma_volve/features/auth/data/repository/auth_repository_impl.dart';
+import 'package:ecommerce_app_huma_volve/features/auth/domain/use_cases/login.dart';
+import 'package:ecommerce_app_huma_volve/features/auth/domain/use_cases/signup.dart';
 import 'package:ecommerce_app_huma_volve/features/auth/presentation/screens/login_screen.dart';
 import 'package:ecommerce_app_huma_volve/features/auth/presentation/view_model/auth_cubit.dart';
 import 'package:ecommerce_app_huma_volve/features/auth/presentation/view_model/auth_states.dart';
@@ -32,8 +34,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
     emailController = TextEditingController();
     passwordController = TextEditingController();
     apiClient = ApiClient();
+    final repository = AuthRepositoryImpl(AuthRemoteDataSourceImpl(apiClient));
     authCubit = AuthCubit(
-      AuthRepositoryImpl(AuthRemoteDataSourceImpl(apiClient)),
+      loginUseCase: Login(repository),
+      signupUseCase: Signup(repository),
     );
 
     super.initState();

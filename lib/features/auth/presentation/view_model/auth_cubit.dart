@@ -1,21 +1,21 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../domain/repository/auth_repository.dart';
+import '../../domain/use_cases/login.dart';
+import '../../domain/use_cases/signup.dart';
 import 'auth_states.dart';
 
 class AuthCubit extends Cubit<AuthStates> {
-  final AuthRepository authRepository;
+  final Login loginUseCase;
+  final Signup signupUseCase;
 
-  AuthCubit(this.authRepository) : super(AuthInitial());
+  AuthCubit({required this.loginUseCase, required this.signupUseCase})
+    : super(AuthInitial());
 
   Future<void> login({required String email, required String password}) async {
     emit(LoginLoading());
 
     try {
-      final tokens = await authRepository.login(
-        email: email,
-        password: password,
-      );
+      final tokens = await loginUseCase(email: email, password: password);
       emit(LoginSuccess(tokens));
     } catch (error) {
       emit(LoginError(error.toString()));
@@ -30,7 +30,7 @@ class AuthCubit extends Cubit<AuthStates> {
     emit(SignupLoading());
 
     try {
-      final user = await authRepository.signup(
+      final user = await signupUseCase(
         name: name,
         email: email,
         password: password,

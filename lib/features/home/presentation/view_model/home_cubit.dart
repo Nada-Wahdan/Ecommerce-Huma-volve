@@ -1,15 +1,18 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../domain/entities/category_entity.dart';
-import '../../domain/repository/home_repository.dart';
+import '../../domain/use_cases/get_categories.dart';
+import '../../domain/use_cases/get_products.dart';
 import 'home_states.dart';
 
 class HomeCubit extends Cubit<HomeStates> {
-  final HomeRepository homeRepository;
+  final GetCategories getCategories;
+  final GetProducts getProducts;
   List<CategoryEntity> _categories = [];
   int? _selectedCategoryId;
 
-  HomeCubit(this.homeRepository) : super(HomeInitial());
+  HomeCubit({required this.getCategories, required this.getProducts})
+    : super(HomeInitial());
 
   List<CategoryEntity> get categories => _categories;
 
@@ -19,7 +22,7 @@ class HomeCubit extends Cubit<HomeStates> {
     emit(CategoriesLoading());
 
     try {
-      _categories = await homeRepository.getCategories();
+      _categories = await getCategories();
       emit(CategoriesSuccess(_categories));
 
       if (_categories.isEmpty) {
@@ -44,7 +47,7 @@ class HomeCubit extends Cubit<HomeStates> {
     emit(ProductsLoading());
 
     try {
-      final products = await homeRepository.getProducts(categoryId: categoryId);
+      final products = await getProducts(categoryId: categoryId);
       emit(ProductsSuccess(products));
     } catch (error) {
       emit(ProductsError(error.toString()));
