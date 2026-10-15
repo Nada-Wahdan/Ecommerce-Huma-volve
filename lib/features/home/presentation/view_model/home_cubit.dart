@@ -1,0 +1,53 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../domain/entities/category_entity.dart';
+import '../../domain/repository/home_repository.dart';
+import 'home_states.dart';
+
+class HomeCubit extends Cubit<HomeStates> {
+  final HomeRepository homeRepository;
+  List<CategoryEntity> _categories = [];
+  int? _selectedCategoryId;
+
+  HomeCubit(this.homeRepository) : super(HomeInitial());
+
+  List<CategoryEntity> get categories => _categories;
+
+  int? get selectedCategoryId => _selectedCategoryId;
+
+  Future<void> loadHomeData() async {
+    emit(CategoriesLoading());
+
+    try {
+      _categories = await homeRepository.getCategories();
+      emit(CategoriesSuccess(_categories));
+
+      if (_categories.isEmpty) {
+        emit(ProductsSuccess(const []));
+        return;
+      }
+
+      final categoryId = _categories.first.id;
+      if (categoryId == null) {
+        emit(ProductsSuccess(const []));
+        return;
+      }
+
+      await loadProducts(categoryId: categoryId);
+    } catch (error) {
+      emit(CategoriesError(error.toString()));
+    }
+  }
+
+  Future<void> loadProducts({required int categoryId}) async {
+    _selectedCategoryId = categoryId;
+    emit(ProductsLoading());
+
+    try {
+      final products = await homeRepository.getProducts(categoryId: categoryId);
+      emit(ProductsSuccess(products));
+    } catch (error) {
+      emit(ProductsError(error.toString()));
+    }
+  }
+}
