@@ -3,9 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/network/api_client.dart';
 import '../../../core/theme.dart';
-import '../../home/cubit/home_cubit.dart';
-import '../../home/service/home_service.dart';
-import '../../home/screens/home_screen.dart';
+import '../../home/data/data_source/home_remote_data_source_impl.dart';
+import '../../home/data/repository/home_repository_impl.dart';
+import '../../home/presentation/view_model/home_cubit.dart';
+import '../../home/presentation/screens/home_screen.dart';
 import '../../cart/screens/cart_screen.dart';
 import '../../profile/screens/profile_screen.dart';
 
@@ -19,22 +20,23 @@ class MainNavigationScreen extends StatefulWidget {
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
   late final ApiClient apiClient;
-  late final HomeService homeService;
+  late final HomeRepositoryImpl homeRepository;
   late HomeCubit homeCubit;
 
   @override
   void initState() {
     super.initState();
     apiClient = ApiClient();
-    homeService = HomeService(apiClient);
-    homeCubit = HomeCubit(homeService);
+    final dataSource = HomeRemoteDataSourceImpl(apiClient);
+    homeRepository = HomeRepositoryImpl(dataSource);
+    homeCubit = HomeCubit(homeRepository);
   }
 
   List<Widget> get _screens => [
     BlocProvider<HomeCubit>(
       create: (BuildContext context) {
         if (homeCubit.isClosed) {
-          homeCubit = HomeCubit(homeService);
+          homeCubit = HomeCubit(homeRepository);
         }
         return homeCubit;
       },
