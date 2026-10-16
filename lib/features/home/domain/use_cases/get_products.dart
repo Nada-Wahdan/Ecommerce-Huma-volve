@@ -6,7 +6,15 @@ class GetProducts {
 
   GetProducts(this.repository);
 
-  Future<List<ProductEntity>> call({required int categoryId}) {
-    return repository.getProducts(categoryId: categoryId);
+  Future<List<ProductEntity>> call({
+    required int categoryId,
+    required int offset,
+    required int limit,
+  }) {
+    return repository.getProducts(
+      categoryId: categoryId,
+      offset: offset,
+      limit: limit,
+    );
   }
 }

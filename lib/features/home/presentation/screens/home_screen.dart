@@ -17,10 +17,30 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  late final ScrollController _scrollController;
+
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController()..addListener(_onScroll);
     context.read<HomeCubit>().loadHomeData();
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 300) {
+      context.read<HomeCubit>().loadMoreProducts();
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_onScroll)
+      ..dispose();
+    super.dispose();
   }
 
   @override
@@ -37,6 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
           backgroundColor: AppTheme.background,
           body: SafeArea(
             child: CustomScrollView(
+              controller: _scrollController,
               slivers: [
                 SliverToBoxAdapter(
                   child: Padding(
@@ -173,27 +194,52 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                     ),
                   )
-                else if (state is ProductsSuccess && state.products.isEmpty)
+                else if ((state is ProductsSuccess ||
+                        state is ProductsLoadingMore) &&
+                    (state is ProductsSuccess
+                            ? state.products
+                            : (state as ProductsLoadingMore).products)
+                        .isEmpty)
                   const SliverToBoxAdapter(
                     child: _StatusMessage(message: 'No products found.'),
                   )
-                else if (state is ProductsSuccess)
-                  SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    sliver: SliverGrid(
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            childAspectRatio: 0.7,
-                            crossAxisSpacing: 16,
-                            mainAxisSpacing: 16,
+                else if (state is ProductsSuccess ||
+                    state is ProductsLoadingMore)
+                  SliverMainAxisGroup(
+                    slivers: [
+                      SliverPadding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        sliver: SliverGrid(
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                childAspectRatio: 0.7,
+                                crossAxisSpacing: 16,
+                                mainAxisSpacing: 16,
+                              ),
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              final products = state is ProductsSuccess
+                                  ? state.products
+                                  : (state as ProductsLoadingMore).products;
+                              return ProductCard(
+                                product: _toDisplayProduct(products[index]),
+                              );
+                            },
+                            childCount: state is ProductsSuccess
+                                ? state.products.length
+                                : (state as ProductsLoadingMore)
+                                      .products
+                                      .length,
                           ),
-                      delegate: SliverChildBuilderDelegate((context, index) {
-                        return ProductCard(
-                          product: _toDisplayProduct(state.products[index]),
-                        );
-                      }, childCount: state.products.length),
-                    ),
+                        ),
+                      ),
+                      SliverToBoxAdapter(
+                        child: state is ProductsLoadingMore
+                            ? const _LoadingIndicator()
+                            : const SizedBox.shrink(),
+                      ),
+                    ],
                   ),
                 const SliverToBoxAdapter(child: SizedBox(height: 24)),
               ],

@@ -21,6 +21,12 @@ class CategoriesError extends HomeStates {
 
 class ProductsLoading extends HomeStates {}
 
+class ProductsLoadingMore extends HomeStates {
+  final List<ProductEntity> products;
+
+  ProductsLoadingMore(this.products);
+}
+
 class ProductsSuccess extends HomeStates {
   final List<ProductEntity> products;
 
