@@ -5,6 +5,8 @@ import '../../../core/network/api_client.dart';
 import '../../../core/theme.dart';
 import '../../home/data/data_source/home_remote_data_source_impl.dart';
 import '../../home/data/repository/home_repository_impl.dart';
+import '../../home/domain/use_cases/get_categories.dart';
+import '../../home/domain/use_cases/get_products.dart';
 import '../../home/presentation/view_model/home_cubit.dart';
 import '../../home/presentation/screens/home_screen.dart';
 import '../../cart/screens/cart_screen.dart';
@@ -29,14 +31,20 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     apiClient = ApiClient();
     final dataSource = HomeRemoteDataSourceImpl(apiClient);
     homeRepository = HomeRepositoryImpl(dataSource);
-    homeCubit = HomeCubit(homeRepository);
+    homeCubit = HomeCubit(
+      getCategories: GetCategories(homeRepository),
+      getProducts: GetProducts(homeRepository),
+    );
   }
 
   List<Widget> get _screens => [
     BlocProvider<HomeCubit>(
       create: (BuildContext context) {
         if (homeCubit.isClosed) {
-          homeCubit = HomeCubit(homeRepository);
+          homeCubit = HomeCubit(
+            getCategories: GetCategories(homeRepository),
+            getProducts: GetProducts(homeRepository),
+          );
         }
         return homeCubit;
       },

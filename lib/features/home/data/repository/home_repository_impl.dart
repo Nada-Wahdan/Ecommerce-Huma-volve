@@ -15,8 +15,16 @@ class HomeRepositoryImpl implements HomeRepository {
   }
 
   @override
-  Future<List<ProductEntity>> getProducts({required int categoryId}) async {
-    final models = await remoteDataSource.getProducts(categoryId: categoryId);
+  Future<List<ProductEntity>> getProducts({
+    required int categoryId,
+    required int offset,
+    required int limit,
+  }) async {
+    final models = await remoteDataSource.getProducts(
+      categoryId: categoryId,
+      offset: offset,
+      limit: limit,
+    );
     return models.map((model) => model.toEntity()).toList();
   }
 }
