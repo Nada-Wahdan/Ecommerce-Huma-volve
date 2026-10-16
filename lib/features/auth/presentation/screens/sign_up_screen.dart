@@ -3,11 +3,11 @@ import 'package:ecommerce_app_huma_volve/features/auth/data/data_source/auth_rem
 import 'package:ecommerce_app_huma_volve/features/auth/data/repository/auth_repository_impl.dart';
 import 'package:ecommerce_app_huma_volve/features/auth/domain/use_cases/login.dart';
 import 'package:ecommerce_app_huma_volve/features/auth/domain/use_cases/signup.dart';
-import 'package:ecommerce_app_huma_volve/features/auth/presentation/screens/login_screen.dart';
 import 'package:ecommerce_app_huma_volve/features/auth/presentation/view_model/auth_cubit.dart';
 import 'package:ecommerce_app_huma_volve/features/auth/presentation/view_model/auth_states.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/widgets/custom_text_field.dart';
 import '../../../../core/widgets/primary_button.dart';
@@ -59,10 +59,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       child: BlocListener<AuthCubit, AuthStates>(
         listener: (context, state) {
           if (state is SignupSuccess) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const LoginScreen()),
-            );
+            context.go('/login');
           } else if (state is SignupError) {
             ScaffoldMessenger.of(context)
                 .showSnackBar(SnackBar(content: Text(state.errorMessage)));
@@ -160,30 +157,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       children: [
                         const Text('Already have an account? '),
                         GestureDetector(
-                          onTap: () {
-                            Navigator.pushReplacement(
-                              context,
-                              PageRouteBuilder(
-                                pageBuilder: (
-                                  context,
-                                  animation,
-                                  secondaryAnimation,
-                                ) => const LoginScreen(),
-                                transitionsBuilder:
-                                    (
-                                      context,
-                                      animation,
-                                      secondaryAnimation,
-                                      child,
-                                    ) {
-                                      return FadeTransition(
-                                        opacity: animation,
-                                        child: child,
-                                      );
-                                    },
-                              ),
-                            );
-                          },
+                          onTap: () => context.go('/login'),
                           child: Text(
                             'Login',
                             style: TextStyle(

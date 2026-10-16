@@ -7,12 +7,11 @@ import 'package:ecommerce_app_huma_volve/features/auth/presentation/view_model/a
 import 'package:ecommerce_app_huma_volve/features/auth/presentation/view_model/auth_states.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/widgets/custom_text_field.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../../../core/theme.dart';
-import '../../../main_navigation/screens/main_navigation_screen.dart';
-import 'sign_up_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -66,9 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
       child: BlocListener<AuthCubit, AuthStates>(
         listener: (context, state) {
           if (state is LoginSuccess) {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
-            );
+            context.go('/home');
           } else if (state is LoginError) {
             ScaffoldMessenger.of(context)
                 .showSnackBar(SnackBar(content: Text(state.errorMessage)));
@@ -157,30 +154,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: [
                         const Text('Don\'t have an account? '),
                         GestureDetector(
-                          onTap: () {
-                            Navigator.pushReplacement(
-                              context,
-                              PageRouteBuilder(
-                                pageBuilder: (
-                                  context,
-                                  animation,
-                                  secondaryAnimation,
-                                ) => const SignUpScreen(),
-                                transitionsBuilder:
-                                    (
-                                      context,
-                                      animation,
-                                      secondaryAnimation,
-                                      child,
-                                    ) {
-                                      return FadeTransition(
-                                        opacity: animation,
-                                        child: child,
-                                      );
-                                    },
-                              ),
-                            );
-                          },
+                          onTap: () => context.push('/signup'),
                           child: Text(
                             'Sign Up',
                             style: TextStyle(
